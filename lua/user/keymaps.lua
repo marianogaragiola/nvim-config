@@ -40,7 +40,7 @@ keymap("n", "<A-j>", "<Esc>:m .+1<CR>==gi", opts)
 keymap("n", "<A-k>", "<Esc>:m .-2<CR>==gi", opts)
 
 -- Insert --
--- Press jk fast to enter
+-- Press jk fast to exit insert mode 
 keymap("i", "jk", "<ESC>", opts)
 
 -- Visual --
@@ -62,7 +62,6 @@ keymap("x", "<A-k>", ":move '<-2<CR>gv-gv", opts)
 
 -- Black for python
 keymap("n", "<leader>=", ":Isort<CR>:Black<CR>", opts)
--- keymap("n", "<leader>i", ":Isort<CR>", opts)
 
 -- Terminal --
 -- Better terminal navigation
@@ -71,3 +70,11 @@ keymap("n", "<leader>=", ":Isort<CR>:Black<CR>", opts)
 -- keymap("t", "<C-k>", "<C-\\><C-N><C-w>k", term_opts)
 -- keymap("t", "<C-l>", "<C-\\><C-N><C-w>l", term_opts)
 
+keymap("n", "<leader>dc", ":Neogen class<CR>", opts)
+keymap("n", "<leader>df", ":Neogen func<CR>", opts)
+
+keymap("n", "<leader>tc", ":ToggleDiagOn<CR>", opts)
+keymap("n", "<leader>td", ":ToggleDiagOff<CR>", opts)
+
+keymap("n", "<leader>n", ":cnext<CR>", opts)
+keymap("n", "<leader>N", ":cprev<CR>", opts)

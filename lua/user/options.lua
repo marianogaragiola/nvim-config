@@ -16,7 +16,7 @@ local options = {
   splitbelow = true,                       -- force all horizontal splits to go below current window
   splitright = true,                       -- force all vertical splits to go to the right of current window
   swapfile = false,                        -- creates a swapfile
-  termguicolors = false,                   -- set term gui colors (most terminals support this)
+  termguicolors = true,                    -- set term gui colors (most terminals support this)
   timeoutlen = 100,                        -- time to wait for a mapped sequence to complete (in milliseconds)
   undofile = true,                         -- enable persistent undo
   updatetime = 300,                        -- faster completion (4000ms default)
@@ -26,14 +26,13 @@ local options = {
   tabstop = 2,                             -- insert 2 spaces for a tab
   cursorline = true,                       -- highlight the current line
   number = true,                           -- set numbered lines
-  relativenumber = true,                   -- set relative numbered lines
+  relativenumber = true,                  -- set relative numbered lines
   numberwidth = 4,                         -- set number column width to 2 {default 4}
   signcolumn = "yes",                      -- always show the sign column, otherwise it would shift the text each time
   wrap = false,                            -- display lines as one long line
   scrolloff = 8,                           -- is one of my fav
   sidescrolloff = 8,
   guifont = "monospace:h17",               -- the font used in graphical neovim applications
-  -- colorcolumn = 80,
 }
 
 vim.opt.shortmess:append "c"
@@ -45,6 +44,7 @@ end
 vim.cmd "set whichwrap+=<,>,[,],h,l"
 vim.cmd [[set iskeyword+=-]]
 vim.cmd [[set formatoptions-=cro]] -- TODO: this doesn't seem to work
+
 -- " clear empty spaces at the end of lines on save of python files
 vim.cmd [[autocmd BufWritePre *.py :%s/\s\+$//e]]
 
@@ -52,4 +52,4 @@ vim.g.black_linelength = 79
 vim.g.vim_isort_python_version = "python3"
 -- vim.g.vim_isort_config_overrides = {"include_trailing_comma"=1, "multi_line_output"=3}
 
--- vim.cmd [[set colorcolumn=80]]
+vim.cmd [[set colorcolumn=80]]

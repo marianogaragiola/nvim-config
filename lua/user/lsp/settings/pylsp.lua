@@ -5,10 +5,17 @@
 --     formatCommand = {"black"}
 --     }
 -- }
+-- nvim_lsp.pyls.setup {
+--     cmd = {"pyls"},
+--     cmd_env = {VIRTUAL_ENV = "$HOME/.envs/base"}
+-- }
 local opts = {
     setup = {
         enable = true,
         cmd = cmd,
+        cmd_env = {
+            VIRTUAL_ENV = "$HOME/.envs/base"
+        },
         on_attach = on_attach,
         settings = {
             pylsp = {
