@@ -5,7 +5,7 @@ end
 
 local lspconfig = require("lspconfig")
 
-local servers = { "pylsp", "sumneko_lua" }
+local servers = { "pylsp", "sumneko_lua", "rust_analyzer" }
 
 lsp_installer.setup({
 	ensure_installed = servers,

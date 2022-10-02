@@ -19,6 +19,7 @@ require "user.indentline"
 require "user.alpha"
 require "user.whichkey"
 require "user.autocommands"
+require "user.fugitive"
 
-vim.g.black_linelength = 79
-vim.cmd [[set colorcolumn=80]]
+-- vim.g.black_linelength = 79
+-- vim.cmd [[set colorcolumn=80]]
