@@ -45,12 +45,15 @@ require('packer').startup(function(use)
   use 'tpope/vim-rhubarb'
   use 'lewis6991/gitsigns.nvim'
 
---   use 'navarasu/onedark.nvim' -- Theme inspired by Atom
+  -- use 'navarasu/onedark.nvim' -- Theme inspired by Atom
   use 'gruvbox-community/gruvbox'
   use 'nvim-lualine/lualine.nvim' -- Fancier statusline
   use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
   use 'numToStr/Comment.nvim' -- "gc" to comment visual regions/lines
   use 'tpope/vim-sleuth' -- Detect tabstop and shiftwidth automatically
+
+  -- bufferline
+  use({ "akinsho/bufferline.nvim", commit = "c78b3ecf9539a719828bca82fc7ddb9b3ba0c353" })
 
   -- Fuzzy Finder (files, lsp, etc)
   use { 'nvim-telescope/telescope.nvim', branch = '0.1.x', requires = { 'nvim-lua/plenary.nvim' } }
@@ -66,6 +69,8 @@ require('packer').startup(function(use)
 	-- use({ "L3MON4D3/LuaSnip", commit = "79b2019c68a2ff5ae4d732d50746c901dd45603a" }) --snippet engine
 	use({ "rafamadriz/friendly-snippets", commit = "d27a83a363e61009278b6598703a763ce9c8e617" }) -- a bunch of snippe
 
+  -- use({ "famiu/bufdelete.nvim", commit = "f79e9d186b42fba5f1b1362006e7c70240db97a4" })
+  use({ "moll/vim-bbye", commit = "25ef93ac5a87526111f43e5110675032dbcacf56" })
   -- Add custom plugins to packer from ~/.config/nvim/lua/custom/plugins.lua
   local has_plugins, plugins = pcall(require, 'custom.plugins')
   if has_plugins then
@@ -168,7 +173,9 @@ vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = tr
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
 -- Close current buffer
-vim.keymap.set('n', '<leader>c', '<cmd>bd<CR><cmd>bn<CR>')
+-- vim.keymap.set('n', '<leader>c', '<cmd>bd<CR><cmd>bn<CR>')
+
+vim.keymap.set('n', '<leader>h', '<cmd>nohlsearch<CR>')
 
 -- Better window navigation
 vim.keymap.set("n", "<C-h>", "<C-w>h")
@@ -336,6 +343,34 @@ require('nvim-tree').setup {
 }
 
 vim.keymap.set('n', '<leader>e', '<cmd>NvimTreeToggle<cr>', { desc = 'NeoVim Tree' })
+
+-- Bufferline
+require('bufferline').setup {
+  options = {
+    numbers = "none",
+    close_command = "Bdelete! %d",
+    indicator_icon = "▎",
+    modified_icon = "●",
+    max_name_length = 30,
+    max_prefix_length = 30, -- prefix used when a buffer is de-duplicated
+    tab_size = 21,
+    diagnostics = false, -- | "nvim_lsp" | "coc",
+    diagnostics_update_in_insert = false,
+    offsets = { { filetype = "NvimTree", text = "", padding = 1 } },
+    show_buffer_icons = true,
+    show_buffer_close_icons = true,
+    show_close_icon = true,
+    show_tab_indicators = true,
+    persist_buffer_sort = true, -- whether or not custom sorted buffers should persist
+    -- can also be a table containing 2 custom separators
+    -- [focused and unfocused]. eg: { '|', '|' }
+    separator_style = "thin", -- | "thick" | "thin" | { 'any', 'any' },
+    enforce_regular_tabs = true,
+    always_show_bufferline = true,
+  },
+}
+-- require('bufdelete')
+vim.keymap.set('n', '<leader>c', '<cmd>Bdelete!<CR>')
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
