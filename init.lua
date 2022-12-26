@@ -1,4 +1,4 @@
--- Install packer
+ -- Install packer
 local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
 local is_bootstrap = false
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
@@ -245,6 +245,12 @@ pcall(require('telescope').load_extension, 'fzf')
 local actions = require('telescope.actions')
 
 require('telescope').setup {
+  pickers = {
+    find_files = {
+      hidden = true,
+      no_ignore = true,
+    }
+  },
   defaults = {
     file_ignore_patterns = { "__pycache__"},
 
@@ -273,7 +279,7 @@ vim.keymap.set('n', '<leader>/', function()
   })
 end, { desc = '[/] Fuzzily search in current buffer]' })
 
-vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
+vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files , { desc = '[S]earch [F]iles'})
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
@@ -349,7 +355,9 @@ require('bufferline').setup {
   options = {
     numbers = "none",
     close_command = "Bdelete! %d",
-    indicator_icon = "▎",
+    indicator = {
+      icon = "▎",
+    },
     modified_icon = "●",
     max_name_length = 30,
     max_prefix_length = 30, -- prefix used when a buffer is de-duplicated
