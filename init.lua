@@ -71,6 +71,8 @@ require('packer').startup(function(use)
 
   -- use({ "famiu/bufdelete.nvim", commit = "f79e9d186b42fba5f1b1362006e7c70240db97a4" })
   use({ "moll/vim-bbye", commit = "25ef93ac5a87526111f43e5110675032dbcacf56" })
+
+  use( 'windwp/nvim-autopairs')
   -- Add custom plugins to packer from ~/.config/nvim/lua/custom/plugins.lua
   local has_plugins, plugins = pcall(require, 'custom.plugins')
   if has_plugins then
@@ -130,6 +132,8 @@ vim.o.smartcase = true
 -- Decrease update time
 vim.o.updatetime = 250
 vim.wo.signcolumn = 'yes'
+
+vim.o.wrap = false
 
 -- Set colorscheme
 vim.o.termguicolors = true
@@ -616,6 +620,13 @@ cmp.setup {
     end,
   },
 }
+
+-- Autopairs
+require('nvim-autopairs').setup( 
+  {
+    disable_filetype = { "TelescopePrompt" , "vim" },
+  }
+)
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
