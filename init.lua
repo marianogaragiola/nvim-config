@@ -73,6 +73,15 @@ require('packer').startup(function(use)
   use({ "moll/vim-bbye", commit = "25ef93ac5a87526111f43e5110675032dbcacf56" })
 
   use( 'windwp/nvim-autopairs')
+
+  use( 'sheerun/vim-polyglot' )
+
+  -- Black
+	use("ambv/black")
+	use("fisadev/vim-isort")
+
+  -- use( 'google/vim-maktaba' )
+  -- use( 'google/vim-codefmt' )
   -- Add custom plugins to packer from ~/.config/nvim/lua/custom/plugins.lua
   local has_plugins, plugins = pcall(require, 'custom.plugins')
   if has_plugins then
@@ -186,6 +195,12 @@ vim.keymap.set("n", "<C-h>", "<C-w>h")
 vim.keymap.set("n", "<C-j>", "<C-w>j")
 vim.keymap.set("n", "<C-k>", "<C-w>k")
 vim.keymap.set("n", "<C-l>", "<C-w>l")
+
+vim.g.black_linelength = 79
+vim.g.vim_isort_python_version = "python3"
+
+-- Black for python
+vim.keymap.set("n", "<leader>=", ":Isort<CR>:Black<CR>", opts)
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -502,6 +517,7 @@ local on_attach = function(_, bufnr)
   end, { desc = 'Format current buffer with LSP' })
 end
 
+-- vim.keymap.set('n', '<leader>=', '<cmd>Format<CR>')
 -- Setup mason so it can manage external tooling
 require('mason').setup()
 
