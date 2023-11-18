@@ -11,6 +11,11 @@ require('packer').startup(function(use)
   -- Package manager
   use 'wbthomason/packer.nvim'
 
+  use ({
+    'j-hui/fidget.nvim', 
+    tag = "legacy"
+  })
+
   use { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     requires = {
@@ -46,6 +51,7 @@ require('packer').startup(function(use)
   use 'lewis6991/gitsigns.nvim'
 
   -- use 'navarasu/onedark.nvim' -- Theme inspired by Atom
+  use "EdenEast/nightfox.nvim" -- Packer
   use 'gruvbox-community/gruvbox'
   use 'nvim-lualine/lualine.nvim' -- Fancier statusline
   use 'lukas-reineke/indent-blankline.nvim' -- Add indentation guides even on blank lines
@@ -96,7 +102,37 @@ require('packer').startup(function(use)
             -- Configuration here, or leave empty to use defaults
         })
     end
-})
+  })
+
+  use({"github/copilot.vim", tag = "v1.10.2"})
+  use ({
+    "zbirenbaum/copilot.lua",
+    -- cmd = "Copilot",
+    -- event = "InsertEnter",
+    -- config = function()
+    --   require("copilot").setup({})
+    -- end,
+  })
+  use {
+    "zbirenbaum/copilot-cmp",
+    after = { "copilot.lua" },
+    config = function ()
+      require("copilot_cmp").setup()
+    end
+  }
+
+  -- use ('Exafunction/codeium.vim')
+  -- Remove the `use` here if you're using folke/lazy.nvim.
+  -- use {
+  --   'Exafunction/codeium.vim',
+  --   config = function ()
+  --     -- Change '<C-g>' here to any keycode you like.
+  --     vim.keymap.set('i', '<C-g>', function () return vim.fn['codeium#Accept']() end, { expr = true })
+  --     vim.keymap.set('i', '<c-;>', function() return vim.fn['codeium#CycleCompletions'](1) end, { expr = true })
+  --     vim.keymap.set('i', '<c-,>', function() return vim.fn['codeium#CycleCompletions'](-1) end, { expr = true })
+  --     vim.keymap.set('i', '<c-x>', function() return vim.fn['codeium#Clear']() end, { expr = true })
+  --   end
+  -- }
 
   -- use( 'google/vim-maktaba' )
   -- use( 'google/vim-codefmt' )
@@ -164,7 +200,8 @@ vim.o.wrap = false
 
 -- Set colorscheme
 vim.o.termguicolors = true
-vim.cmd [[colorscheme gruvbox]]
+-- vim.cmd [[colorscheme gruvbox]]
+vim.cmd [[colorscheme nordfox]]
 -- vim.cmd [[colorscheme onedark]]
 
 -- Set completeopt to have a better completion experience
@@ -214,8 +251,8 @@ vim.keymap.set("n", "<C-j>", "<C-w>j")
 vim.keymap.set("n", "<C-k>", "<C-w>k")
 vim.keymap.set("n", "<C-l>", "<C-w>l")
 
-vim.g.black_linelength = 79
-vim.g.vim_isort_python_version = "python3"
+-- vim.g.black_linelength = 79
+-- vim.g.vim_isort_python_version = "python3"
 
 -- Black for python
 vim.keymap.set("n", "<leader>=", ":Isort<CR>:Black<CR>", opts)
@@ -236,7 +273,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 require('lualine').setup {
   options = {
     icons_enabled = false,
-    theme = 'gruvbox',
+    -- theme = 'gruvbox',
+    theme = 'nordfox',
     component_separators = '|',
     section_separators = '',
   },
@@ -544,6 +582,7 @@ local on_attach = function(_, bufnr)
 end
 
 -- vim.keymap.set('n', '<leader>=', '<cmd>Format<CR>')
+vim.keymap.set('n', '<leader>ff', '<cmd>Format<CR>')
 -- Setup mason so it can manage external tooling
 require('mason').setup()
 
@@ -568,12 +607,30 @@ for _, lsp in ipairs(servers) do
     capabilities = capabilities,
   }
 end
+require('lspconfig').pylsp.setup {
+  -- settings = {
+  --   pylsp = {
+  --     plugings = {
+  --       black = {enabled = true},
+  --       isort = {enabled = true},
+  --     }
+  --   }
+  -- },
+  -- plugins = {
+  --   isort = {enabled = true, profile = "black", line_length = 79},
+  --   black = {enabled = true, line_length = 79},
+  -- --   -- mypy = {enabled = false},
+  -- },
+}
 require('lspconfig').ruff_lsp.setup {
   on_attach = on_attach,
   init_options = {
     settings = {
       -- Any extra CLI arguments for `ruff` go here.
       args = {},
+      -- args = {
+      --   config = "/Users/mariano/ruff.toml"
+      -- },
     }
   }
 }
@@ -627,34 +684,36 @@ cmp.setup {
     ['<C-Space>'] = cmp.mapping.complete(),
     ["<C-k>"] = cmp.mapping.select_prev_item(),
 		["<C-j>"] = cmp.mapping.select_next_item(),
-    ['<CR>'] = cmp.mapping.confirm {
+    ['<Tab>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,
     },
-    ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif luasnip.expandable() then
-        luasnip.expand()
-      elseif luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
-      else
-        fallback()
-      end
-    end, { 'i', 's' }),
-    ['<S-Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      elseif luasnip.jumpable(-1) then
-        luasnip.jump(-1)
-      else
-        fallback()
-      end
-    end, { 'i', 's' }),
+    -- ['<Tab>'] = cmp.mapping(function(fallback)
+    --   if cmp.visible() then
+    --     cmp.select_next_item()
+    --   elseif luasnip.expandable() then
+    --     luasnip.expand()
+    --   elseif luasnip.expand_or_jumpable() then
+    --     luasnip.expand_or_jump()
+    --   else
+    --     fallback()
+    --   end
+    -- end, { 'i', 's' }),
+    -- ['<S-Tab>'] = cmp.mapping(function(fallback)
+    --   if cmp.visible() then
+    --     cmp.select_prev_item()
+    --   elseif luasnip.jumpable(-1) then
+    --     luasnip.jump(-1)
+    --   else
+    --     fallback()
+    --   end
+    -- end, { 'i', 's' }),
   },
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
+    -- Copilot Source
+    { name = "copilot" },
   },
   formatting = {
     fields = { "kind", "abbr", "menu" },
@@ -667,6 +726,7 @@ cmp.setup {
         luasnip = "[Snippet]",
         buffer = "[Buffer]",
         path = "[Path]",
+        copilot = "[Copilot]",
       })[entry.source.name]
       return vim_item
     end,
@@ -718,3 +778,57 @@ vim.keymap.set('v', '<Leader>vs',  function() require('silicon').visualise_api({
 require("nvim-surround").setup({
   -- Configuration here, or leave empty to use defaults
 })
+
+-- vim.keymap.set('i', '<C-g>', function () return vim.fn['codeium#Accept']() end, { expr = true })
+-- vim.keymap.set('i', '<c-;>', function() return vim.fn['codeium#CycleCompletions'](1) end, { expr = true })
+-- vim.keymap.set('i', '<c-,>', function() return vim.fn['codeium#CycleCompletions'](-1) end, { expr = true })
+-- vim.keymap.set('i', '<c-x>', function() return vim.fn['codeium#Clear']() end, { expr = true })
+
+-- vim.cmd [[packadd copilot]]
+-- vim.cmd [[Copilot enable]]
+
+require('copilot').setup({
+  panel = {
+    enabled = false,
+    auto_refresh = false,
+    keymap = {
+      jump_prev = "[[",
+      jump_next = "]]",
+      accept = "<CR>",
+      refresh = "gr",
+      open = "<M-CR>"
+    },
+    layout = {
+      position = "bottom", -- | top | left | right
+      ratio = 0.4
+    },
+  },
+  suggestion = {
+    enabled = false,
+    auto_trigger = false,
+    debounce = 75,
+    keymap = {
+      accept = "<M-l>",
+      accept_word = false,
+      accept_line = false,
+      next = "<M-]>",
+      prev = "<M-[>",
+      dismiss = "<C-]>",
+    },
+  },
+  filetypes = {
+    yaml = false,
+    markdown = false,
+    help = false,
+    gitcommit = false,
+    gitrebase = false,
+    hgcommit = false,
+    svn = false,
+    cvs = false,
+    ["."] = false,
+  },
+  copilot_node_command = 'node', -- Node.js version must be > 16.x
+  server_opts_overrides = {},
+})
+-- -- vim.cmd [[Copilot enable]]
+-- -- vim.keymap.set("n", "<leader>cp", "<cmd>Copilot panel<CR>")
