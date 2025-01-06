@@ -198,6 +198,16 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+vim.keymap.set('n', '<leader>df', vim.diagnostic.open_float, { desc = 'Open diagnostic [D]iagnostic [F]loat' })
+vim.keymap.set('n', '<leader>h', '<cmd>noh<CR>', { desc = 'Clear highlights' })
+
+-- Visual Block --
+-- Move text up and down
+vim.keymap.set("x", "J", ":move '>+1<CR>gv-gv")
+vim.keymap.set("x", "K", ":move '<-2<CR>gv-gv")
+vim.keymap.set("x", "<A-j>", ":move '>+1<CR>gv-gv")
+vim.keymap.set("x", "<A-k>", ":move '<-2<CR>gv-gv")
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -479,7 +489,7 @@ require('lazy').setup({
       require('bufferline').setup {
         options = {
           numbers = "none",
-          close_command = "Bdelete! %d",
+          close_command = "bdelete! %d",
           indicator = {
             icon = "▎",
           },
@@ -504,7 +514,7 @@ require('lazy').setup({
         },
       }
 
-      vim.keymap.set('n', '<leader>c', '<cmd>bdelete!<CR>')
+      vim.keymap.set('n', '<leader>bc', '<cmd>bdelete!<CR>', { desc = '[B]uffer [C]lose' })
       vim.keymap.set("n", "<S-l>", ":bnext<CR>")
       vim.keymap.set("n", "<S-h>", ":bprevious<CR>")
     end,
