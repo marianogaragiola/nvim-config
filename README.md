@@ -1,10 +1,9 @@
-# Neovim configuration files
+# NeoVim Configuration
 
-This is copy from [LunarVim neovim config](https://github.com/LunarVim/Neovim-from-scratch.git) with 
-some changes I did by my own.
+## Requirements
 
-## Pre-requisites
-
-```sh 
-sudo apt install -y ripgrep
+Python dependencies
+```sh
+pip3 install python-lsp-black psls-isort ruff-lsp
 ```
+
