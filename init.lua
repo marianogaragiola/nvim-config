@@ -222,6 +222,22 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- Ensure pylsp's parso understands Python 3.14 grammar.
+--  Mason ships pylsp with an old parso (0.8.4, grammar tops out at 3.13), so
+--  jedi silently returns no results (goto/refs/completion) on 3.14 projects.
+--  parso >=0.8.7 adds grammar314; keep jedi as-is (pylsp pins jedi<0.20.0).
+--  A mason reinstall/update of python-lsp-server reverts this, so re-run here.
+vim.api.nvim_create_autocmd('VimEnter', {
+  desc = 'Keep pylsp parso new enough for Python 3.14',
+  group = vim.api.nvim_create_augroup('pylsp-parso-py314', { clear = true }),
+  callback = function()
+    local py = vim.fn.stdpath 'data' .. '/mason/packages/python-lsp-server/venv/bin/python'
+    if vim.fn.executable(py) == 1 then
+      vim.system { py, '-m', 'pip', 'install', '-q', 'parso>=0.8.7' }
+    end
+  end,
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -850,8 +866,8 @@ require('lazy').setup({
       },
     },
   },
-  {
-    'Bilal2453/luvit-meta',
+  { 
+    'Bilal2453/luvit-meta', 
     lazy = true
    },
   {
@@ -1072,6 +1088,34 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      -- Resolve the Python interpreter pylsp's jedi plugin should use.
+      -- Prefers an activated virtualenv, then a project-local .venv (uv default),
+      -- then falls back to the system python.
+      local function get_python_path(workspace)
+        if vim.env.VIRTUAL_ENV and vim.env.VIRTUAL_ENV ~= '' then
+          return vim.fs.joinpath(vim.env.VIRTUAL_ENV, 'bin', 'python')
+        end
+        -- Prefer the project's own .venv (uv default). Use the LSP root if we
+        -- have it, otherwise walk up from the current buffer / cwd.
+        local root = workspace or vim.fs.root(0, '.venv') or vim.fn.getcwd()
+        local venv = vim.fs.joinpath(root, '.venv', 'bin', 'python')
+        if vim.fn.executable(venv) == 1 then
+          return venv
+        end
+        return vim.fn.exepath 'python3' ~= '' and vim.fn.exepath 'python3' or 'python'
+      end
+
+      -- Resolve the project's .venv site-packages dir, e.g.
+      -- <root>/.venv/lib/python3.14/site-packages. pylint and mypy run as their
+      -- own subprocesses out of the *global* pylsp install, so jedi.environment
+      -- alone doesn't help them — they need the venv pushed onto their path.
+      local function get_venv_site_packages(workspace)
+        local root = workspace or vim.fs.root(0, '.venv') or vim.fn.getcwd()
+        local pattern = vim.fs.joinpath(root, '.venv', 'lib', 'python*', 'site-packages')
+        local matches = vim.fn.glob(pattern, true, true)
+        return matches[1]
+      end
+
       ---@class LspServersConfig
       ---@field mason table<string, vim.lsp.Config>
       ---@field others table<string, vim.lsp.Config>
@@ -1080,29 +1124,48 @@ require('lazy').setup({
         -- gopls = {},
         -- pyright = {},
         pylsp = {
-          pylsp = {
-            on_attach = on_attach,
-            settings = {
-              pylsp = {
-                plugins = {
-                  -- formatter options
-                  black = { enabled = true },
-                  autopep8 = { enabled = false },
-                  yapf = { enabled = false },
-                  -- linter options
-                  pylint = { enabled = true, executable = "pylint" },
-                  pyflakes = { enabled = false },
-                  pycodestyle = { enabled = false },
-                  -- type checker
-                  pylsp_mypy = { enabled = true },
-                  -- auto-completion options
-                  jedi_completion = { fuzzy = true },
-                  -- import sorting
-                  pyls_isort = { enabled = true },
-                },
+          -- Point jedi at the project's own .venv so completion / goto / imports
+          -- resolve against project dependencies, not the global environment.
+          before_init = function(_, config)
+            local py = get_python_path(config.root_dir)
+            local plugins = config.settings.pylsp.plugins
+            -- completion / goto / imports
+            plugins.jedi.environment = py
+            -- pylint runs as a subprocess: inject the venv onto its sys.path so
+            -- it stops reporting false "Unable to import 'X'" (E0401) errors.
+            local sp = get_venv_site_packages(config.root_dir)
+            if sp then
+              plugins.pylint.args = {
+                '--init-hook',
+                "import sys; sys.path.insert(0, '" .. sp .. "')",
+              }
+            end
+            -- mypy: point it at the venv interpreter so it resolves the same deps.
+            plugins.pylsp_mypy = plugins.pylsp_mypy or {}
+            plugins.pylsp_mypy.overrides = { '--python-executable', py, true }
+          end,
+          settings = {
+            pylsp = {
+              plugins = {
+                -- formatter options
+                black = { enabled = true },
+                autopep8 = { enabled = false },
+                yapf = { enabled = false },
+                -- linter options
+                pylint = { enabled = true, executable = "pylint" },
+                pyflakes = { enabled = false },
+                pycodestyle = { enabled = false },
+                -- type checker
+                pylsp_mypy = { enabled = true },
+                -- auto-completion options
+                jedi_completion = { fuzzy = true },
+                -- jedi.environment is set per-project in before_init above
+                jedi = {},
+                -- import sorting
+                pyls_isort = { enabled = true },
               },
-            }
-          }
+            },
+          },
         },
         ruff = {},
         rust_analyzer = {},
@@ -1133,9 +1196,13 @@ require('lazy').setup({
 
       ---@type MasonLspconfigSettings
       ---@diagnostic disable-next-line: missing-fields
+      -- NOTE: keep automatic_enable = false. We attach every server through the
+      -- lspconfig manager loop below (which carries each server's full config,
+      -- including pylsp's before_init). With automatic_enable = true, mason's
+      -- native vim.lsp.enable() would attach a *second*, config-less pylsp that
+      -- races the loop and wins with no jedi.environment set.
       require('mason-lspconfig').setup {
-        -- automatic_enable = vim.tbl_keys(servers or {}),
-        automatic_enable = true,
+        automatic_enable = false,
         ensure_installed = { "pyrefly" },
       }
 
@@ -1155,14 +1222,18 @@ require('lazy').setup({
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+      -- Broadcast blink.cmp's extra capabilities to every server.
+      local ok_blink, blink = pcall(require, 'blink.cmp')
+      local capabilities = ok_blink and blink.get_lsp_capabilities()
+        or vim.lsp.protocol.make_client_capabilities()
+
       for server_name, config in pairs(servers) do
-        vim.lsp.config(server_name, config)
-        require('lspconfig')[server_name].setup {
-          on_attach = on_attach,
-          capabilities = vim.lsp.protocol.make_client_capabilities(),
-          -- capabilities = capabilities, -- Use this if you want to use the capabilities from nvim-cmp
-          -- capabilities = blink.cmp.get_lsp_capabilities(), -- Use this if you want to use the capabilities from blink.cmp
-        }
+        -- Forward the *full* per-server config (settings, before_init, ...) to
+        -- lspconfig. Previously only on_attach/capabilities were passed, so
+        -- pylsp's before_init — which points jedi at the project .venv — never
+        -- ran on the client that actually attached.
+        config.capabilities = vim.tbl_deep_extend('force', capabilities, config.capabilities or {})
+        require('lspconfig')[server_name].setup(config)
       end
       -- require('mason-lspconfig').setup {
       --   handlers = {
@@ -1226,6 +1297,37 @@ require('lazy').setup({
       },
     },
   },
+
+  -- Cursor nvim
+  -- {
+  --   "xTacobaco/cursor-agent.nvim",
+  --   config = function()
+  --     vim.keymap.set("n", "<leader>oc", ":CursorAgent<CR>", { desc = "Cursor Agent: Toggle terminal" })
+  --     vim.keymap.set("v", "<leader>oc", ":CursorAgentSelection<CR>", { desc = "Cursor Agent: Send selection" })
+  --     -- vim.keymap.set("n", "<leader>cA", ":CursorAgentBuffer<CR>", { desc = "Cursor Agent: Send buffer" })
+  --   end,
+  -- },
+  {
+    'Loki-Astari/cursor',
+    config = function()
+        require('cursor').setup({
+            width = 50,                 -- Width of the cursor window (default: 50)
+            auto_open = false,          -- Auto-open on startup (default: false)
+            command = 'cursor-agent',
+        })
+        vim.keymap.set('n', '<leader>oc', ':CursorOpen<CR>',   { desc = 'Cursor: Open' })
+        vim.keymap.set('n', '<leader>cc', ':CursorClose<CR>',  { desc = 'Cursor: Close' })
+        vim.keymap.set('n', '<leader>ct', ':CursorToggle<CR>', { desc = 'Cursor: Toggle' })
+    end,
+    whichkey = function(wk)
+        wk.add({
+            {'<leader>c', group = 'Cursor'},
+            {'<leader>ca', ':CursorOpen<CR>',   desc = 'Open (if needed), Switch to Cursor Window'},
+            {'<leader>cc', ':CursorClose<CR>',  desc = 'Close Cursor Window'},
+            {'<leader>ct', ':CursorToggle<CR>', desc = 'Toggle Cursor Window'},
+        })
+    end,
+  },
   {
     "coder/claudecode.nvim",
     dependencies = { "folke/snacks.nvim" },
@@ -1250,6 +1352,49 @@ require('lazy').setup({
       { "<leader>ad", "<cmd>ClaudeCodeDiffDeny<cr>", desc = "Deny diff" },
     },
   },
+  {
+    "codegik/claude-chat.nvim",
+    cmd = {" ClaudeChat", "ClaudeChatReset", "ClaudeChatFile", "ClaudeChatContinue", "ClaudeChatSessions"},
+    keys = {
+      { "<leader>ai", "<cmd>ClaudeChat<cr>", desc = "Claude Chat: toggle sidebar" },
+      { "<leader>af", "<cmd>ClaudeChatFile<cr>", desc = "Claude Chat: add current file" },
+    },
+    config = function()
+      require("claude-chat").setup()
+    end,
+  },
+  -- {
+  --   "carlos-algms/agentic.nvim",
+
+  --   opts = {
+  --     -- Available by default: "claude-acp" | "gemini-acp" | "codex-acp" | "opencode-acp" | "cursor-acp"
+  --     -- provider = "claude-acp", -- setting the name here is all you need to get started
+  --     provider = 'cursor-acp'
+  --   },
+
+  --   -- these are just suggested keymaps; customize as desired
+  --   keys = {
+  --     {
+  --       "<C-\\>",
+  --       function() require("agentic").toggle() end,
+  --       mode = { "n", "v", "i" },
+  --       desc = "Toggle Agentic Chat"
+  --     },
+  --     {
+  --       "<C-'>",
+  --       function() require("agentic").add_selection_or_file_to_context() end,
+  --       mode = { "n", "v" },
+  --       desc = "Add file or selection to Agentic to Context"
+  --     },
+  --     {
+  --       "<C-,>",
+  --       function() require("agentic").new_session() end,
+  --       mode = { "n", "v", "i" },
+  --       desc = "New Agentic Session"
+  --     },
+  --   },
+  -- },
+
   -- Copilot
   {
     "zbirenbaum/copilot.lua",
