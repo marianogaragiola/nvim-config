@@ -3,8 +3,6 @@
 Single-file Neovim configuration (`init.lua`) using [lazy.nvim](https://github.com/folke/lazy.nvim),
 set up mainly for Python (uv), plus JavaScript/TypeScript, Terraform, Rust, Go, Lua, Bash and YAML.
 
-The previous kickstart-based config is kept in `init-back.lua` for reference.
-
 ## Requirements
 
 - Neovim **0.11+**
@@ -49,7 +47,7 @@ Wait for both to finish, then restart Neovim. Useful commands:
 | Git | gitsigns.nvim, diffview.nvim |
 | Lists | trouble.nvim (diagnostics, references, symbols, quickfix) |
 | Syntax | nvim-treesitter (pinned to the `master` branch) |
-| Editing | mini.ai, mini.surround, nvim-autopairs, vim-sleuth, todo-comments, indent-blankline |
+| Editing | mini.ai, mini.surround, mini.bufremove, nvim-autopairs, vim-sleuth, todo-comments, indent-blankline |
 | AI | claude-chat.nvim |
 | Help | which-key.nvim (press `<Space>` and wait to see available keys) |
 
@@ -100,7 +98,7 @@ Leader is `<Space>`. Press `<Space>` and wait to see everything in which-key; `<
 | `<leader>R` | Reload config (see below) |
 | `<C-h/j/k/l>` | Move between windows |
 | `<S-h>` / `<S-l>` | Previous / next buffer |
-| `<leader>bc` | Close buffer (keeps the window) |
+| `<leader>bc` | Close buffer (keeps the window, asks if there are unsaved changes) |
 | `<leader>e` | Toggle file explorer |
 | `J` / `K` (visual), `<A-j>` / `<A-k>` (visual) | Move selected lines down / up |
 | `<Esc><Esc>` (terminal) | Leave terminal mode |
@@ -109,7 +107,8 @@ Leader is `<Space>`. Press `<Space>` and wait to see everything in which-key; `<
 
 | Keys | Action |
 | --- | --- |
-| `<leader>sf` | Files (includes hidden/ignored, skips `.git/`, `.venv/`, `node_modules`) |
+| `<leader>sf` | Files (includes hidden files, skips anything in `.gitignore`) |
+| `<leader>sF` | Files including gitignored ones (still skips `.git/`, `.venv/`, `node_modules`) |
 | `<leader>sg` | Live grep |
 | `<leader>sw` | Grep word under cursor |
 | `<leader><leader>` | Open buffers |

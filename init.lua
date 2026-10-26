@@ -1,5 +1,4 @@
 -- Neovim config (Neovim 0.11+, lazy.nvim)
--- Previous kickstart-based config is backed up in init-back.lua
 
 -- [[ Leader ]] must be set before plugins load
 vim.g.mapleader = ' '
@@ -59,7 +58,9 @@ map('x', '<A-k>', ":move '<-2<CR>gv-gv", { silent = true, desc = 'Move selection
 -- Buffers
 map('n', '<S-l>', '<cmd>bnext<CR>', { desc = 'Next buffer' })
 map('n', '<S-h>', '<cmd>bprevious<CR>', { desc = 'Previous buffer' })
-map('n', '<leader>bc', '<cmd>bp|bd #<CR>', { desc = '[B]uffer [C]lose' })
+map('n', '<leader>bc', function()
+  require('mini.bufremove').delete(0, false) -- asks before dropping unsaved changes
+end, { desc = '[B]uffer [C]lose' })
 
 -- Reload config: options, keymaps, autocmds, diagnostics.
 -- Plugin specs are not re-applied; use `:Lazy reload <plugin>` for those.
@@ -327,7 +328,7 @@ require('lazy').setup {
           },
         },
         pickers = {
-          find_files = { hidden = true, no_ignore = true },
+          find_files = { hidden = true },
         },
         extensions = {
           ['ui-select'] = { require('telescope.themes').get_dropdown() },
@@ -340,6 +341,9 @@ require('lazy').setup {
       map('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       map('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       map('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      map('n', '<leader>sF', function()
+        builtin.find_files { no_ignore = true, prompt_title = 'Find Files (incl. ignored)' }
+      end, { desc = '[S]earch all [F]iles (incl. ignored)' })
       map('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       map('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       map('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -369,7 +373,12 @@ require('lazy').setup {
     dependencies = 'nvim-tree/nvim-web-devicons',
     opts = {
       options = {
-        close_command = 'bdelete! %d',
+        close_command = function(n)
+          require('mini.bufremove').delete(n, false)
+        end,
+        right_mouse_command = function(n)
+          require('mini.bufremove').delete(n, false)
+        end,
         indicator = { icon = '▎' },
         modified_icon = '●',
         max_name_length = 30,
@@ -696,6 +705,7 @@ require('lazy').setup {
     config = function()
       require('mini.ai').setup { n_lines = 500 } -- va), yinq, ci'
       require('mini.surround').setup() -- saiw), sd', sr)'
+      require('mini.bufremove').setup() -- close buffers, keep windows
       local statusline = require 'mini.statusline'
       statusline.setup { use_icons = vim.g.have_nerd_font }
       ---@diagnostic disable-next-line: duplicate-set-field
