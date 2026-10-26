@@ -46,7 +46,8 @@ Wait for both to finish, then restart Neovim. Useful commands:
 | LSP | nvim-lspconfig, mason.nvim, mason-lspconfig, mason-tool-installer, fidget.nvim, lazydev.nvim |
 | Completion | blink.cmp + friendly-snippets + blink-copilot (copilot.lua) |
 | Formatting | conform.nvim |
-| Git | gitsigns.nvim |
+| Git | gitsigns.nvim, diffview.nvim |
+| Lists | trouble.nvim (diagnostics, references, symbols, quickfix) |
 | Syntax | nvim-treesitter (pinned to the `master` branch) |
 | Editing | mini.ai, mini.surround, nvim-autopairs, vim-sleuth, todo-comments, indent-blankline |
 | AI | claude-chat.nvim |
@@ -167,6 +168,24 @@ Copilot suggestions appear in the completion menu (not as inline ghost text). Ru
 | `<leader>gb` | Blame line |
 | `<leader>gd` | Diff against index |
 | `<leader>tb` | Toggle inline blame |
+| `<leader>gv` | Toggle diffview (all uncommitted changes, side by side; also shows merge conflicts) |
+| `<leader>gh` | History of the current file |
+| `<leader>gH` | History of the whole repo |
+
+In diffview: `q` closes it, `<Tab>` / `<S-Tab>` go to the next / previous file, `-` stages / unstages the
+file in the file panel, `g?` shows all keys.
+
+### Lists (Trouble)
+
+| Keys | Action |
+| --- | --- |
+| `<leader>xx` | Diagnostics for the whole project |
+| `<leader>xb` | Diagnostics for the current buffer |
+| `<leader>xs` | Symbols outline |
+| `<leader>xr` | LSP definitions / references (right side) |
+| `<leader>xq` / `<leader>xl` | Quickfix / location list |
+
+All of them toggle. Inside the list: `<CR>` jumps to the item, `o` jumps and closes, `q` closes, `?` shows help.
 
 ### Claude
 

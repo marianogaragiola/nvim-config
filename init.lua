@@ -172,6 +172,7 @@ require('lazy').setup {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>w', group = '[W]orkspace' },
+        { '<leader>x', group = 'Trouble lists' },
       },
     },
   },
@@ -225,6 +226,33 @@ require('lazy').setup {
         bmap('n', '<leader>gd', gs.diffthis, '[G]it [D]iff against index')
         bmap('n', '<leader>tb', gs.toggle_current_line_blame, '[T]oggle git [B]lame line')
       end,
+    },
+  },
+
+  { -- Git diffs, file history, merge conflicts
+    'sindrets/diffview.nvim',
+    cmd = { 'DiffviewOpen', 'DiffviewClose', 'DiffviewFileHistory' },
+    keys = {
+      {
+        '<leader>gv',
+        function()
+          if require('diffview.lib').get_current_view() then
+            vim.cmd 'DiffviewClose'
+          else
+            vim.cmd 'DiffviewOpen'
+          end
+        end,
+        desc = '[G]it diff [V]iew (toggle)',
+      },
+      { '<leader>gh', '<cmd>DiffviewFileHistory %<CR>', desc = '[G]it file [H]istory' },
+      { '<leader>gH', '<cmd>DiffviewFileHistory<CR>', desc = '[G]it repo [H]istory' },
+    },
+    opts = {
+      keymaps = {
+        view = { { 'n', 'q', '<cmd>DiffviewClose<CR>', { desc = 'Close diffview' } } },
+        file_panel = { { 'n', 'q', '<cmd>DiffviewClose<CR>', { desc = 'Close diffview' } } },
+        file_history_panel = { { 'n', 'q', '<cmd>DiffviewClose<CR>', { desc = 'Close diffview' } } },
+      },
     },
   },
 
@@ -504,6 +532,20 @@ require('lazy').setup {
         lua = { 'stylua' },
         python = { 'ruff_organize_imports', 'ruff_format' },
       },
+    },
+  },
+
+  { -- Diagnostics, references, symbols and quickfix in a list
+    'folke/trouble.nvim',
+    cmd = 'Trouble',
+    opts = {},
+    keys = {
+      { '<leader>xx', '<cmd>Trouble diagnostics toggle<CR>', desc = 'Diagnostics (project)' },
+      { '<leader>xb', '<cmd>Trouble diagnostics toggle filter.buf=0<CR>', desc = 'Diagnostics ([B]uffer)' },
+      { '<leader>xs', '<cmd>Trouble symbols toggle focus=false<CR>', desc = '[S]ymbols outline' },
+      { '<leader>xr', '<cmd>Trouble lsp toggle focus=false win.position=right<CR>', desc = 'LSP definitions / [R]eferences' },
+      { '<leader>xq', '<cmd>Trouble qflist toggle<CR>', desc = '[Q]uickfix list' },
+      { '<leader>xl', '<cmd>Trouble loclist toggle<CR>', desc = '[L]ocation list' },
     },
   },
 
