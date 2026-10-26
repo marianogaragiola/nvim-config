@@ -231,8 +231,13 @@ changing a plugin's settings, either restart Neovim or run `:Lazy reload <plugin
 
 ## Updating
 
-- `:Lazy sync` updates plugins and records the versions in `lazy-lock.json`. Commit that file so the
-  same versions are used everywhere; `:Lazy restore` goes back to the versions in the lockfile.
+- Every plugin is pinned to a commit with `commit = '<sha>'` in its spec in `init.lua`, so `:Lazy update`
+  never moves it and every machine gets the same code. `lazy-lock.json` has the same SHAs.
+- To upgrade a plugin, find the new commit on its GitHub page (for blink.cmp, use the commit of a release
+  tag, see Troubleshooting), put it in the spec, run `:Lazy sync`, test, and commit both `init.lua` and
+  `lazy-lock.json`.
+- On a machine where plugins were already installed at other commits, run `:Lazy sync` once to move them
+  to the pinned commits.
 - `:MasonUpdate` / `:Mason` (press `U`) updates language servers and tools.
 - `:TSUpdate` updates treesitter parsers.
 
@@ -243,6 +248,12 @@ changing a plugin's settings, either restart Neovim or run `:Lazy reload <plugin
   `:Mason`, and run `:Lazy sync` (an old `nvim-lspconfig` in `lazy-lock.json` has no server configs).
 - **Imports from your project's packages are unresolved:** make sure `.venv` exists in the project root
   (`uv sync`), then `:LspRestart`.
+- **blink.cmp: "No fuzzy matching library found!":** blink only downloads its prebuilt library when
+  its folder is checked out exactly at a release tag. Check with
+  `git -C ~/.local/share/nvim/lazy/blink.cmp describe --tags --exact-match`. If that fails, run
+  `:Lazy sync` (moves it to the pinned commit, a release tag), then restart Neovim. If the tag is
+  still missing, run `git -C ~/.local/share/nvim/lazy/blink.cmp fetch --tags` first. If the download
+  itself fails (firewall/proxy), `:messages` shows the `curl` error.
 - **Icons show as boxes:** your terminal font is not a Nerd Font.
 - **Treesitter errors after an update:** nvim-treesitter must stay on the `master` branch (already
   pinned in `init.lua`); run `:TSUpdate`.

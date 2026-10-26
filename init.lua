@@ -163,12 +163,16 @@ if vim.g.lazy_did_setup then
   return
 end
 
+-- Every plugin is pinned with `commit` (same SHAs as lazy-lock.json), so `:Lazy update` can't move them.
+-- To upgrade one, change its commit here and run `:Lazy sync`. A plugin mentioned in several places is pinned once.
 require('lazy').setup {
-  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  { 'folke/lazy.nvim', commit = '306a05526ada86a7b30af95c5cc81ffba93fef97' },
+  { 'tpope/vim-sleuth', commit = 'be69bff86754b1aa5adcbb527d7fcd1635a84080' }, -- Detect tabstop and shiftwidth automatically
 
   -- Colorschemes: the active one is applied at the end of this file (see [[ Colorscheme ]])
   {
     'sainnhe/everforest',
+    commit = '85a86eb62409e3ec88713bff3d1b9d7374e112e4',
     priority = 1000,
     init = function()
       vim.g.everforest_background = 'medium' -- 'hard' | 'medium' | 'soft'
@@ -178,12 +182,14 @@ require('lazy').setup {
   },
   {
     'ellisonleao/gruvbox.nvim',
+    commit = '154eb5ff5b96d0641307113fa385eaf0d36d9796',
     priority = 1000,
     opts = {},
   },
 
   { -- Pending keybinds popup
     'folke/which-key.nvim',
+    commit = '3aab2147e74890957785941f0c1ad87d0a44c15a',
     event = 'VimEnter',
     opts = {
       spec = {
@@ -203,6 +209,7 @@ require('lazy').setup {
 
   { -- Git signs in the gutter + hunk actions
     'lewis6991/gitsigns.nvim',
+    commit = 'd4854fa9a94b5c8b37dd209fb4a19e98e764186f',
     opts = {
       signs = {
         add = { text = '+' },
@@ -255,6 +262,7 @@ require('lazy').setup {
 
   { -- Git diffs, file history, merge conflicts
     'sindrets/diffview.nvim',
+    commit = '4516612fe98ff56ae0415a259ff6361a89419b0a',
     cmd = { 'DiffviewOpen', 'DiffviewClose', 'DiffviewFileHistory' },
     keys = {
       {
@@ -282,18 +290,20 @@ require('lazy').setup {
 
   { -- Fuzzy finder
     'nvim-telescope/telescope.nvim',
+    commit = '40aedd8a68c78a656a10a8d62d80c54af59420fb',
     event = 'VimEnter',
     dependencies = {
-      'nvim-lua/plenary.nvim',
+      { 'nvim-lua/plenary.nvim', commit = '74b06c6c75e4eeb3108ec01852001636d85a932b' },
       {
         'nvim-telescope/telescope-fzf-native.nvim',
+        commit = 'b25b749b9db64d375d782094e2b9dce53ad53a40',
         build = 'make',
         cond = function()
           return vim.fn.executable 'make' == 1
         end,
       },
-      'nvim-telescope/telescope-ui-select.nvim',
-      'nvim-tree/nvim-web-devicons',
+      { 'nvim-telescope/telescope-ui-select.nvim', commit = '6e51d7da30bd139a6950adf2a47fda6df9fa06d2' },
+      { 'nvim-tree/nvim-web-devicons', commit = 'ec309a0eaff6ea967e58c275996155ab5c16938d' },
     },
     config = function()
       local actions = require 'telescope.actions'
@@ -354,6 +364,7 @@ require('lazy').setup {
 
   { -- Buffer tabs
     'akinsho/bufferline.nvim',
+    commit = '655133c3b4c3e5e05ec549b9f8cc2894ac6f51b3',
     version = '*',
     dependencies = 'nvim-tree/nvim-web-devicons',
     opts = {
@@ -379,12 +390,13 @@ require('lazy').setup {
 
   { -- File explorer
     'nvim-neo-tree/neo-tree.nvim',
+    commit = '1a14083046d96e88e361d1da00761c40d45012f3',
     branch = 'v3.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
       'nvim-tree/nvim-web-devicons',
-      'MunifTanjim/nui.nvim',
-      { 's1n7ax/nvim-window-picker', name = 'window-picker', version = '2.*', opts = {} }, -- used by `w` in the tree
+      { 'MunifTanjim/nui.nvim', commit = '10fc361835c856ba4233ef5ea135b919bf3dce97' },
+      { 's1n7ax/nvim-window-picker', name = 'window-picker', commit = '6382540b2ae5de6c793d4aa2e3fe6dbb518505ec', version = '2.*', opts = {} }, -- used by `w` in the tree
     },
     keys = {
       { '<leader>e', '<cmd>Neotree toggle<CR>', desc = '[E]xplore' },
@@ -405,6 +417,7 @@ require('lazy').setup {
   -- [[ LSP ]]
   { -- Lua LSP for Neovim config/runtime/plugins
     'folke/lazydev.nvim',
+    commit = 'ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d',
     ft = 'lua',
     opts = {
       library = {
@@ -414,11 +427,12 @@ require('lazy').setup {
   },
   {
     'neovim/nvim-lspconfig',
+    commit = '77b7432d4770d23b277d37923e5a08a442d8bb07',
     dependencies = {
-      { 'mason-org/mason.nvim', opts = {} },
-      'mason-org/mason-lspconfig.nvim',
-      'WhoIsSethDaniel/mason-tool-installer.nvim',
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'mason-org/mason.nvim', commit = '2a6940af80375532e5e9e7c1f2fc6319a1b7a69d', opts = {} },
+      { 'mason-org/mason-lspconfig.nvim', commit = 'a338f44149f5673882c32629697d67b0c0547aec' },
+      { 'WhoIsSethDaniel/mason-tool-installer.nvim', commit = '443f1ef8b5e6bf47045cb2217b6f748a223cf7dc' },
+      { 'j-hui/fidget.nvim', commit = '9e0201673e08e997e7cf52afca5565c70bd117f3', opts = {} },
       'saghen/blink.cmp', -- registers its completion capabilities with every server
     },
     config = function()
@@ -541,6 +555,7 @@ require('lazy').setup {
 
   { -- Formatting
     'stevearc/conform.nvim',
+    commit = '016802de402556da54c36bd7359b441266b01cdd',
     event = 'BufWritePre',
     cmd = 'ConformInfo',
     keys = {
@@ -564,6 +579,7 @@ require('lazy').setup {
 
   { -- Diagnostics, references, symbols and quickfix in a list
     'folke/trouble.nvim',
+    commit = 'bd67efe408d4816e25e8491cc5ad4088e708a69a',
     cmd = 'Trouble',
     opts = {},
     keys = {
@@ -583,6 +599,7 @@ require('lazy').setup {
   -- [[ Completion ]]
   { -- Copilot (suggestions are shown through blink.cmp, not inline)
     'zbirenbaum/copilot.lua',
+    commit = '891bb2fda9595307e762cead6a2b7dc2f4076c37',
     cmd = 'Copilot',
     event = 'InsertEnter',
     opts = {
@@ -604,11 +621,12 @@ require('lazy').setup {
   },
   {
     'saghen/blink.cmp',
+    commit = '78336bc89ee5365633bcf754d93df01678b5c08f',
     event = 'VimEnter',
     version = '1.*',
     dependencies = {
-      'rafamadriz/friendly-snippets',
-      { 'fang2hou/blink-copilot', dependencies = 'zbirenbaum/copilot.lua' },
+      { 'rafamadriz/friendly-snippets', commit = 'b4d01b0fdf3c9a549961c2f9ffe8dc09be166219' },
+      { 'fang2hou/blink-copilot', commit = '7ad8209b2f880a2840c94cdcd80ab4dc511d4f39', dependencies = 'zbirenbaum/copilot.lua' },
     },
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
@@ -639,6 +657,7 @@ require('lazy').setup {
 
   { -- Auto-close brackets and quotes
     'windwp/nvim-autopairs',
+    commit = '3172f40c16563db871a58f20d205c710ad782311',
     event = 'InsertEnter',
     opts = {},
   },
@@ -646,6 +665,7 @@ require('lazy').setup {
   -- [[ AI ]]
   {
     'codegik/claude-chat.nvim',
+    commit = '3124c5fff1513c21bdc6c0f4a412785990da2986',
     cmd = { 'ClaudeChat', 'ClaudeChatReset', 'ClaudeChatFile', 'ClaudeChatContinue', 'ClaudeChatSessions' },
     keys = {
       { '<leader>ai', '<cmd>ClaudeChat<cr>', desc = 'Claude Chat: toggle sidebar' },
@@ -657,6 +677,7 @@ require('lazy').setup {
   -- [[ Editing / UI ]]
   { -- Highlight TODO, NOTE, etc. in comments
     'folke/todo-comments.nvim',
+    commit = '31e3c38ce9b29781e4422fc0322eb0a21f4e8668',
     event = 'VimEnter',
     dependencies = 'nvim-lua/plenary.nvim',
     opts = { signs = false },
@@ -664,12 +685,14 @@ require('lazy').setup {
 
   { -- Indentation guides
     'lukas-reineke/indent-blankline.nvim',
+    commit = 'f1e186e44d3b7f9ae918008e2c28ce37c6023d2d',
     main = 'ibl',
     opts = {},
   },
 
   { -- Text objects, surround, statusline
     'echasnovski/mini.nvim',
+    commit = 'ed8683521996657ce774e5eec9d2f9b1b5ecef82',
     config = function()
       require('mini.ai').setup { n_lines = 500 } -- va), yinq, ci'
       require('mini.surround').setup() -- saiw), sd', sr)'
@@ -684,6 +707,7 @@ require('lazy').setup {
 
   { -- Syntax highlighting / indentation
     'nvim-treesitter/nvim-treesitter',
+    commit = 'cf12346a3414fa1b06af75c79faebe7f76df080a',
     branch = 'master', -- `main` is an incompatible rewrite
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs',
