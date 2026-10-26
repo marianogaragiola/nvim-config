@@ -101,6 +101,23 @@ vim.api.nvim_create_autocmd('BufWritePre', {
   end,
 })
 
+-- Remember the colorscheme across restarts. Stored outside the repo, per machine.
+local default_colorscheme = 'everforest'
+local colorscheme_file = vim.fn.stdpath 'state' .. '/colorscheme'
+
+local function saved_colorscheme()
+  local ok, lines = pcall(vim.fn.readfile, colorscheme_file)
+  return ok and lines[1] or default_colorscheme
+end
+
+vim.api.nvim_create_autocmd('ColorScheme', {
+  desc = 'Save the selected colorscheme',
+  group = augroup,
+  callback = function(args)
+    pcall(vim.fn.writefile, { args.match }, colorscheme_file)
+  end,
+})
+
 -- [[ Diagnostics ]]
 vim.diagnostic.config {
   severity_sort = true,
@@ -149,13 +166,20 @@ end
 require('lazy').setup {
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
-  { -- Colorscheme
+  -- Colorschemes: the active one is applied at the end of this file (see [[ Colorscheme ]])
+  {
+    'sainnhe/everforest',
+    priority = 1000,
+    init = function()
+      vim.g.everforest_background = 'medium' -- 'hard' | 'medium' | 'soft'
+      vim.g.everforest_enable_italic = 1
+      vim.g.everforest_better_performance = 1
+    end,
+  },
+  {
     'ellisonleao/gruvbox.nvim',
     priority = 1000,
-    config = function()
-      require('gruvbox').setup {}
-      vim.cmd.colorscheme 'gruvbox'
-    end,
+    opts = {},
   },
 
   { -- Pending keybinds popup
@@ -322,6 +346,9 @@ require('lazy').setup {
       map('n', '<leader>sn', function()
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
+      map('n', '<leader>sc', function()
+        builtin.colorscheme { enable_preview = true, ignore_builtins = true }
+      end, { desc = '[S]earch [C]olorscheme (live preview)' })
     end,
   },
 
@@ -543,7 +570,11 @@ require('lazy').setup {
       { '<leader>xx', '<cmd>Trouble diagnostics toggle<CR>', desc = 'Diagnostics (project)' },
       { '<leader>xb', '<cmd>Trouble diagnostics toggle filter.buf=0<CR>', desc = 'Diagnostics ([B]uffer)' },
       { '<leader>xs', '<cmd>Trouble symbols toggle focus=false<CR>', desc = '[S]ymbols outline' },
-      { '<leader>xr', '<cmd>Trouble lsp toggle focus=false win.position=right<CR>', desc = 'LSP definitions / [R]eferences' },
+      {
+        '<leader>xr',
+        '<cmd>Trouble lsp toggle focus=false win.position=right<CR>',
+        desc = 'LSP definitions / [R]eferences',
+      },
       { '<leader>xq', '<cmd>Trouble qflist toggle<CR>', desc = '[Q]uickfix list' },
       { '<leader>xl', '<cmd>Trouble loclist toggle<CR>', desc = '[L]ocation list' },
     },
@@ -687,5 +718,12 @@ require('lazy').setup {
     },
   },
 }
+
+-- [[ Colorscheme ]]
+-- Use the last one picked (saved by the ColorScheme autocmd above), else the default
+local ok_cs = pcall(vim.cmd.colorscheme, saved_colorscheme())
+if not ok_cs then
+  vim.cmd.colorscheme(default_colorscheme)
+end
 
 -- vim: ts=2 sts=2 sw=2 et

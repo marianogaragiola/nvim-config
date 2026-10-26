@@ -39,7 +39,7 @@ Wait for both to finish, then restart Neovim. Useful commands:
 | Area | Plugin |
 | --- | --- |
 | Plugin manager | lazy.nvim |
-| Colorscheme | gruvbox.nvim |
+| Colorschemes | everforest (default), gruvbox.nvim — see [Colorscheme](#colorscheme) |
 | Fuzzy finder | telescope.nvim (+ fzf-native, ui-select) |
 | File explorer | neo-tree.nvim (+ nvim-window-picker) |
 | Buffer tabs / statusline | bufferline.nvim / mini.statusline |
@@ -119,6 +119,7 @@ Leader is `<Space>`. Press `<Space>` and wait to see everything in which-key; `<
 | `<leader>sd` | Diagnostics |
 | `<leader>sh` / `<leader>sk` | Help tags / keymaps |
 | `<leader>sn` | Neovim config files |
+| `<leader>sc` | Pick colorscheme (live preview, remembered) |
 | `<leader>sr` | Resume last search |
 | `<leader>ss` | List Telescope pickers |
 
@@ -203,6 +204,21 @@ All of them toggle. Inside the list: `<CR>` jumps to the item, `o` jumps and clo
 
 `<CR>` open, `s` / `S` vertical / horizontal split, `a` add (end with `/` for a directory), `d` delete,
 `r` rename, `y` / `x` / `p` copy / cut / paste, `H` toggle hidden files, `/` filter, `w` open with window picker, `?` help.
+
+## Colorscheme
+
+Both [everforest](https://github.com/sainnhe/everforest) and
+[gruvbox](https://github.com/ellisonleao/gruvbox.nvim) are installed. Switch with `<leader>sc` (moving through
+the list previews each one; `<CR>` keeps it, `<Esc>` goes back) or with `:colorscheme <name>`.
+
+The last colorscheme you pick is saved to `~/.local/state/nvim/colorscheme` and used on the next start.
+That file lives outside this repo, so switching never creates a git change and each machine keeps its own
+choice. Delete it to go back to the default (`default_colorscheme` in `init.lua`, currently `everforest`).
+
+- everforest contrast: set `vim.g.everforest_background` to `'hard'`, `'medium'` or `'soft'` in its plugin spec.
+- Light variants: `:set background=light` (works for both themes; not remembered, `init.lua` sets `dark` on start).
+- Adding another theme: add its plugin to the colorschemes section in `init.lua` and restart; it then shows
+  up in `<leader>sc`.
 
 ## Reloading the config
 
