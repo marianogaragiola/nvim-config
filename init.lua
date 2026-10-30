@@ -535,7 +535,10 @@ require('lazy').setup {
         ruff = {}, -- linting, formatting, import sorting
         rust_analyzer = {}, -- formats with rustfmt via <leader>f
         ts_ls = {}, -- JavaScript + TypeScript (incl. jsx/tsx)
-        terraformls = {}, -- formats with `terraform fmt` via <leader>f
+        terraformls = { -- formats with `terraform fmt` via <leader>f
+          -- lspconfig's default calls vim.lsp.codelens.enable, which needs Neovim 0.12+
+          on_attach = function() end,
+        },
         tflint = {}, -- Terraform linting
         gopls = {},
         bashls = {},
